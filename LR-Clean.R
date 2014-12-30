@@ -70,7 +70,7 @@ checkInput <- function(ok = c("Yes", "Y", "")) {
 # Create the folder in which all files will be put.
 createDirOrFail <- function(path){
   tryCatch(
-    dir.create(path),
+    dir.create(path, recursive = TRUE),
     warning = function(w) {
       stop("Impossible to create the recovery folder to store the files, please solve this issue before proceeding further:\n", w$message)
     }
@@ -78,6 +78,18 @@ createDirOrFail <- function(path){
 }
 tempFolder <- file.path("~/Desktop/tempLRCleanRemoveMe", Sys.time())
 createDirOrFail(tempFolder)
+
+# function to move files, even between drives
+file.move <- function(from, to) {
+  hasCopied <- file.copy(from, to)
+  if (all(hasCopied)) {
+  file.remove(from)
+  } else {
+    file.remove(to)
+    warnings()
+    stop("ERROR while moving files...")
+  }
+}
 
 for (folder in names(pictureFiles)) {
   cat("## Folder ", folder, "--------------\n")
@@ -91,9 +103,9 @@ for (folder in names(pictureFiles)) {
     if (nOrphan > length(existingFiles) * 0.5) {
       cat("WARNING! more than 50% of files to remove, there might be a problem...\n")
     }
-    cat(nOrphan, " files to remove. Proceed?")
+    cat(nOrphan, "files to remove. Proceed?")
     if (checkInput()) {
-#       file.rename(file.path(folder, orphanFiles), file.path(tempFolder, orphanFiles))
+      stopifnot(file.move(file.path(folder, orphanFiles), file.path(tempFolder, orphanFiles)))
       writeLines(file.path(folder, orphanFiles), con = fopen <- file(file.path(tempFolder, "movedFiles.txt"), open = "a"))
       close(fopen)
       cat("Done\n")
@@ -102,7 +114,11 @@ for (folder in names(pictureFiles)) {
     }
   } 
 }
-cat("\nDon't forget to manually clean up the files in the temp directory (", tempFolder, ") if everything went well (try Lightroom),\n
-    or use the text file included in the folder to recover the files and revert the operation\n")
+cat(
+"\nDon't forget to manually clean up the files in the temp directory
+(", tempFolder, ")
+if everything went well (try Lightroom),
+or use the text file included in the folder to recover 
+the files and revert the operation.\n")
 cat("\n## Thank you for using this script! - ALizée\n")
 
