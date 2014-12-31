@@ -103,7 +103,7 @@ for (folder in names(pictureFiles)) {
     if (nOrphan > length(existingFiles) * 0.5) {
       cat("WARNING! more than 50% of files to remove, there might be a problem...\n")
     }
-    cat(nOrphan, "files to remove. Proceed?")
+    cat(nOrphan, "files to remove. Proceed? (return, 'Y' or 'Yes')")
     if (checkInput()) {
       stopifnot(file.move(file.path(folder, orphanFiles), file.path(tempFolder, orphanFiles)))
       writeLines(file.path(folder, orphanFiles), con = fopen <- file(file.path(tempFolder, "movedFiles.txt"), open = "a"))
